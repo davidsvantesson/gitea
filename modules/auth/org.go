@@ -60,7 +60,7 @@ type CreateTeamForm struct {
 	Description   string `binding:"MaxSize(255)"`
 	Permission    string
 	Units         []models.UnitType
-	CanCreateRepo bool
+	CanCreateOrgRepo bool
 }
 
 // Validate validates the fields
