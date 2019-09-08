@@ -159,11 +159,11 @@ func CreateOrganization(org, owner *User) (err error) {
 
 	// Create default owner team.
 	t := &Team{
-		OrgID:      org.ID,
-		LowerName:  strings.ToLower(ownerTeamName),
-		Name:       ownerTeamName,
-		Authorize:  AccessModeOwner,
-		NumMembers: 1,
+		OrgID:         org.ID,
+		LowerName:     strings.ToLower(ownerTeamName),
+		Name:          ownerTeamName,
+		Authorize:     AccessModeOwner,
+		NumMembers:    1,
 		CanCreateRepo: true,
 	}
 	if _, err = sess.Insert(t); err != nil {
@@ -347,8 +347,8 @@ func IsPublicMembership(orgID, uid int64) (bool, error) {
 }
 
 func CanCreateRepo(orgID, uid int64) (bool, error) {
-	if owner, err := IsOrganizationOwner(orgID, uid int64); owner == true || err != nil {
-		return (owner, err)
+	if owner, err := IsOrganizationOwner(orgID, uid); owner == true || err != nil {
+		return owner, err
 	}
 	return x.
 		Where("uid=?", uid).
@@ -396,11 +396,10 @@ func getOrgsCanCreateRepoByUserIDDesc(sess *xorm.Session, userID int64) ([]*User
 		Join("INNER", "`team_user`", "`team_user`.org_id=`user`.id").
 		Join("INNER", "`team`", "`team`.id=`team_user`.team_id").
 		Where("`team_user`.uid=?", userID).
-		And(builder.Eq{"`team`.authorize":AccessModeOwner}.Or(builder.Eq{"`team`.can_create_repo":true})).
+		And(builder.Eq{"`team`.authorize": AccessModeOwner}.Or(builder.Eq{"`team`.can_create_repo": true})).
 		Asc("`user`.name").
 		Find(&orgs)
 }
-
 
 // HasOrgVisible tells if the given user can see the given org
 func HasOrgVisible(org *User, user *User) bool {
@@ -455,7 +454,6 @@ func GetOwnedOrgsByUserIDDesc(userID int64, desc string) ([]*User, error) {
 func GetOrgsCanCreateRepoByUserIDDesc(userID int64, desc string) ([]*User, error) {
 	return getOrgsCanCreateRepoByUserIDDesc(x.Desc(desc), userID)
 }
-
 
 // GetOrgUsersByUserID returns all organization-user relations by user ID.
 func GetOrgUsersByUserID(uid int64, all bool) ([]*OrgUser, error) {

@@ -15,12 +15,12 @@ import (
 
 // Organization contains organization context
 type Organization struct {
-	IsOwner      bool
-	IsMember     bool
-	IsTeamMember bool // Is member of team.
-	IsTeamAdmin  bool // In owner team or team that has admin permission level.
-	Organization *models.User
-	OrgLink      string
+	IsOwner          bool
+	IsMember         bool
+	IsTeamMember     bool // Is member of team.
+	IsTeamAdmin      bool // In owner team or team that has admin permission level.
+	Organization     *models.User
+	OrgLink          string
 	CanCreateOrgRepo bool
 
 	Team *models.Team
@@ -96,7 +96,7 @@ func HandleOrgAssignment(ctx *Context, args ...bool) {
 			ctx.Org.CanCreateOrgRepo, err = org.CanCreateRepo(ctx.User.ID)
 			if err != nil {
 				ctx.ServerError("CanCreateRepo", err)
-				return				
+				return
 			}
 		}
 	} else {
