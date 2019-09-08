@@ -36,7 +36,7 @@ func (org *User) IsOrgMember(uid int64) (bool, error) {
 }
 
 func (org *User) CanCreateOrgRepo(uid int64) (bool, error) {
-	return CanCreateRepo(org.ID, uid)
+	return CanCreateOrgRepo(org.ID, uid)
 }
 
 func (org *User) getTeam(e Engine, name string) (*Team, error) {
