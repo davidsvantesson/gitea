@@ -21,6 +21,7 @@ type Organization struct {
 	IsTeamAdmin  bool // In owner team or team that has admin permission level.
 	Organization *models.User
 	OrgLink      string
+	CanCreateOrgRepo bool
 
 	Team *models.Team
 }
@@ -73,6 +74,7 @@ func HandleOrgAssignment(ctx *Context, args ...bool) {
 		ctx.Org.IsMember = true
 		ctx.Org.IsTeamMember = true
 		ctx.Org.IsTeamAdmin = true
+		ctx.Org.CanCreateOrgRepo = true
 	} else if ctx.IsSigned {
 		ctx.Org.IsOwner, err = org.IsOwnedBy(ctx.User.ID)
 		if err != nil {
@@ -84,11 +86,17 @@ func HandleOrgAssignment(ctx *Context, args ...bool) {
 			ctx.Org.IsMember = true
 			ctx.Org.IsTeamMember = true
 			ctx.Org.IsTeamAdmin = true
+			ctx.Org.CanCreateOrgRepo = true
 		} else {
 			ctx.Org.IsMember, err = org.IsOrgMember(ctx.User.ID)
 			if err != nil {
 				ctx.ServerError("IsOrgMember", err)
 				return
+			}
+			ctx.Org.CanCreateOrgRepo, err = org.CanCreateRepo(ctx.User.ID)
+			if err != nil {
+				ctx.ServerError("CanCreateRepo", err)
+				return				
 			}
 		}
 	} else {
@@ -102,6 +110,7 @@ func HandleOrgAssignment(ctx *Context, args ...bool) {
 	}
 	ctx.Data["IsOrganizationOwner"] = ctx.Org.IsOwner
 	ctx.Data["IsOrganizationMember"] = ctx.Org.IsMember
+	ctx.Data["CanCreateOrgRepo"] = ctx.Org.CanCreateOrgRepo
 
 	ctx.Org.OrgLink = setting.AppSubURL + "/org/" + org.Name
 	ctx.Data["OrgLink"] = ctx.Org.OrgLink

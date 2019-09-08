@@ -35,6 +35,10 @@ func (org *User) IsOrgMember(uid int64) (bool, error) {
 	return IsOrganizationMember(org.ID, uid)
 }
 
+func (org *User) CanCreateRepo(uid int64) (bool, error) {
+	return CanCreateRepo(org.ID, uid)
+}
+
 func (org *User) getTeam(e Engine, name string) (*Team, error) {
 	return getTeam(e, org.ID, name)
 }
@@ -160,6 +164,7 @@ func CreateOrganization(org, owner *User) (err error) {
 		Name:       ownerTeamName,
 		Authorize:  AccessModeOwner,
 		NumMembers: 1,
+		CanCreateRepo: true,
 	}
 	if _, err = sess.Insert(t); err != nil {
 		return fmt.Errorf("insert owner team: %v", err)
@@ -341,6 +346,19 @@ func IsPublicMembership(orgID, uid int64) (bool, error) {
 		Exist()
 }
 
+func CanCreateRepo(orgID, uid int64) (bool, error) {
+	if owner, err := IsOrganizationOwner(orgID, uid int64); owner == true || err != nil {
+		return (owner, err)
+	}
+	return x.
+		Where("uid=?", uid).
+		And("org_id=?", orgID).
+		Table("team_user").
+		Join("INNER", "`team`", "`team`.id=`team_user`.team_id").
+		And("can_create_repo=true").
+		Exist()
+}
+
 func getOrgsByUserID(sess *xorm.Session, userID int64, showAll bool) ([]*User, error) {
 	orgs := make([]*User, 0, 10)
 	if !showAll {
@@ -371,6 +389,18 @@ func getOwnedOrgsByUserID(sess *xorm.Session, userID int64) ([]*User, error) {
 		Asc("`user`.name").
 		Find(&orgs)
 }
+
+func getOrgsCanCreateRepoByUserIDDesc(sess *xorm.Session, userID int64) ([]*User, error) {
+	orgs := make([]*User, 0, 10)
+	return orgs, sess.
+		Join("INNER", "`team_user`", "`team_user`.org_id=`user`.id").
+		Join("INNER", "`team`", "`team`.id=`team_user`.team_id").
+		Where("`team_user`.uid=?", userID).
+		And(builder.Eq{"`team`.authorize":AccessModeOwner}.Or(builder.Eq{"`team`.can_create_repo":true})).
+		Asc("`user`.name").
+		Find(&orgs)
+}
+
 
 // HasOrgVisible tells if the given user can see the given org
 func HasOrgVisible(org *User, user *User) bool {
@@ -419,6 +449,13 @@ func GetOwnedOrgsByUserID(userID int64) ([]*User, error) {
 func GetOwnedOrgsByUserIDDesc(userID int64, desc string) ([]*User, error) {
 	return getOwnedOrgsByUserID(x.Desc(desc), userID)
 }
+
+// GetOrgsCanCreateRepoByUserIDDesc returns a list of organizations where given user ID
+// are allowed to create repos, ordered descending by the given condition.
+func GetOrgsCanCreateRepoByUserIDDesc(userID int64, desc string) ([]*User, error) {
+	return getOrgsCanCreateRepoByUserIDDesc(x.Desc(desc), userID)
+}
+
 
 // GetOrgUsersByUserID returns all organization-user relations by user ID.
 func GetOrgUsersByUserID(uid int64, all bool) ([]*OrgUser, error) {
