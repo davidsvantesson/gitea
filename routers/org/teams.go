@@ -182,10 +182,10 @@ func NewTeamPost(ctx *context.Context, form auth.CreateTeamForm) {
 	ctx.Data["Units"] = models.Units
 
 	t := &models.Team{
-		OrgID:         ctx.Org.Organization.ID,
-		Name:          form.TeamName,
-		Description:   form.Description,
-		Authorize:     models.ParseAccessMode(form.Permission),
+		OrgID:            ctx.Org.Organization.ID,
+		Name:             form.TeamName,
+		Description:      form.Description,
+		Authorize:        models.ParseAccessMode(form.Permission),
 		CanCreateOrgRepo: form.CanCreateOrgRepo,
 	}
 
