@@ -35,7 +35,7 @@ func (org *User) IsOrgMember(uid int64) (bool, error) {
 	return IsOrganizationMember(org.ID, uid)
 }
 
-func (org *User) CanCreateRepo(uid int64) (bool, error) {
+func (org *User) CanCreateOrgRepo(uid int64) (bool, error) {
 	return CanCreateRepo(org.ID, uid)
 }
 
@@ -164,7 +164,7 @@ func CreateOrganization(org, owner *User) (err error) {
 		Name:          ownerTeamName,
 		Authorize:     AccessModeOwner,
 		NumMembers:    1,
-		CanCreateRepo: true,
+		CanCreateOrgRepo: true,
 	}
 	if _, err = sess.Insert(t); err != nil {
 		return fmt.Errorf("insert owner team: %v", err)
@@ -346,7 +346,7 @@ func IsPublicMembership(orgID, uid int64) (bool, error) {
 		Exist()
 }
 
-func CanCreateRepo(orgID, uid int64) (bool, error) {
+func CanCreateOrgRepo(orgID, uid int64) (bool, error) {
 	if owner, err := IsOrganizationOwner(orgID, uid); owner == true || err != nil {
 		return owner, err
 	}

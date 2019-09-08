@@ -80,9 +80,9 @@ func checkContextUser(ctx *context.Context, uid int64) *models.User {
 		return nil
 	}
 	if !ctx.User.IsAdmin {
-		canCreate, err := org.CanCreateRepo(ctx.User.ID)
+		canCreate, err := org.CanCreateOrgRepo(ctx.User.ID)
 		if err != nil {
-			ctx.ServerError("CanCreateRepo", err)
+			ctx.ServerError("CanCreateOrgRepo", err)
 			return nil
 		} else if !canCreate {
 			ctx.Error(403)

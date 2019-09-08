@@ -32,7 +32,7 @@ type Team struct {
 	NumRepos      int
 	NumMembers    int
 	Units         []*TeamUnit `xorm:"-"`
-	CanCreateRepo bool        `xorm:"NOT NULL DEFAULT false"`
+	CanCreateOrgRepo bool        `xorm:"NOT NULL DEFAULT false"`
 }
 
 // ColorFormat provides a basic color format for a Team

@@ -27,7 +27,7 @@
 						<div class="inline field">
 							<div class="ui checkbox">
 								<label for="can_create_repo">{{.i18n.Tr "org.teams.can_create_repo"}}</label>
-								<input id="can_create_repo" name="can_create_repo" type="checkbox" {{if .Team.CanCreateRepo}}checked{{end}}>
+								<input id="can_create_repo" name="can_create_repo" type="checkbox" {{if .Team.CanCreateOrgRepo}}checked{{end}}>
 								<span class="help">{{.i18n.Tr "org.teams.can_create_repo_helper"}}</span>
 							</div>
 						</div>

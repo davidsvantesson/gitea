@@ -93,9 +93,9 @@ func HandleOrgAssignment(ctx *Context, args ...bool) {
 				ctx.ServerError("IsOrgMember", err)
 				return
 			}
-			ctx.Org.CanCreateOrgRepo, err = org.CanCreateRepo(ctx.User.ID)
+			ctx.Org.CanCreateOrgRepo, err = org.CanCreateOrgRepo(ctx.User.ID)
 			if err != nil {
-				ctx.ServerError("CanCreateRepo", err)
+				ctx.ServerError("CanCreateOrgRepo", err)
 				return
 			}
 		}
