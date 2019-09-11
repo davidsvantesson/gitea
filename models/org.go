@@ -351,12 +351,11 @@ func CanCreateOrgRepo(orgID, uid int64) (bool, error) {
 		return owner, err
 	}
 	return x.
-		Where("uid=?", uid).
-		And("org_id=?", orgID).
-		Table("team_user").
-		Join("INNER", "`team`", "`team`.id=`team_user`.team_id").
-		And("can_create_org_repo=true").
-		Exist()
+		Where("team.can_create_org_repo = true").
+		Join("INNER", "team_user", "team_user.team_id = team.id").
+		And("team_user.uid = ?", uid).
+		And("team_user.org_id = ?", orgID).
+		Exist(new(Team))
 }
 
 func getOrgsByUserID(sess *xorm.Session, userID int64, showAll bool) ([]*User, error) {
