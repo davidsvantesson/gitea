@@ -295,6 +295,7 @@ func EditTeamPost(ctx *context.Context, form auth.CreateTeamForm) {
 			return
 		}
 	}
+	t.CanCreateOrgRepo = form.CanCreateOrgRepo
 
 	if ctx.HasError() {
 		ctx.HTML(200, tplTeamNew)
