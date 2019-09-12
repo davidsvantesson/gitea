@@ -125,10 +125,10 @@ func CreateTeam(ctx *context.APIContext, form api.CreateTeamOption) {
 	//   "201":
 	//     "$ref": "#/responses/Team"
 	team := &models.Team{
-		OrgID:       ctx.Org.Organization.ID,
-		Name:        form.Name,
-		Description: form.Description,
-		Authorize:   models.ParseAccessMode(form.Permission),
+		OrgID:            ctx.Org.Organization.ID,
+		Name:             form.Name,
+		Description:      form.Description,
+		Authorize:        models.ParseAccessMode(form.Permission),
 		CanCreateOrgRepo: form.CanCreateOrgRepo,
 	}
 
