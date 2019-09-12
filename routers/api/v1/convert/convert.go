@@ -225,6 +225,7 @@ func ToTeam(team *models.Team) *api.Team {
 		Description: team.Description,
 		Permission:  team.Authorize.String(),
 		Units:       team.GetUnitNames(),
+		CanCreateOrgRepo: team.CanCreateOrgRepo,
 	}
 }
 
