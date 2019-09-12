@@ -55,7 +55,9 @@ func (repo *Repository) addCollaborator(e Engine, u *User) error {
 	}
 	if err != nil {
 		return fmt.Errorf("recalculateAccesses 'team=%v': %v", repo.Owner.IsOrganization(), err)
-	}	
+	}
+
+	return nil
 }
 
 // AddCollaborator adds new collaboration to a repository with default access mode.
@@ -135,7 +137,7 @@ func (repo *Repository) changeCollaborationAccessMode(e Engine, uid int64, mode 
 		Cols("mode").
 		Update(collaboration); err != nil {
 		return fmt.Errorf("update collaboration: %v", err)
-	} else if _, err = sess.Exec("UPDATE access SET mode = ? WHERE user_id = ? AND repo_id = ?", mode, uid, repo.ID); err != nil {
+	} else if _, err = e.Exec("UPDATE access SET mode = ? WHERE user_id = ? AND repo_id = ?", mode, uid, repo.ID); err != nil {
 		return fmt.Errorf("update access table: %v", err)
 	}
 
