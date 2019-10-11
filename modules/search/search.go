@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"html"
 	gotemplate "html/template"
+	"regexp"
 	"strings"
 
 	"code.gitea.io/gitea/modules/highlight"
@@ -128,4 +129,27 @@ func PerformSearch(repoIDs []int64, keyword string, page, pageSize int) (int, []
 		}
 	}
 	return int(total), displayResults, nil
+}
+
+type SearchKeyword struct {
+	
+}
+
+// SplitKeyword splits a keyword string into separate search terms
+func SplitKeyword(keyword string) ([]string, error) {
+	if r, err := regexp.Compile(`[^\s,"']+|"([^"]*)"|'([^']*)'`), err != nil {
+		return _, err
+	}
+
+	keywords := keyword.FindAllStrings(keyword, -1)
+	for i, s := range keywords {
+		keywords[i] = strings.Trim(s," '\"")
+	}
+
+	return keywords, nil
+}
+
+// ParseKeywordQualifier checks if a keyword might be a search qualifier and parses it
+func ParseKeywordQualifier(keyword string) {
+
 }
