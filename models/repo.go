@@ -557,7 +557,11 @@ func (repo *Repository) ComposeMetas() map[string]string {
 	if repo.ExternalMetas == nil {
 		repo.ExternalMetas = map[string]string{
 			"user":     repo.MustOwner().Name,
+			"user_lower": string.ToLower(repo.MustOwner().Name)
+			"user_upper": string.ToUpper
 			"repo":     repo.Name,
+			"repo_lower": repo.LowerName
+			"repo_upper": string.ToUpper(repo.Name)
 			"repoPath": repo.RepoPath(),
 		}
 		unit, err := repo.GetUnit(UnitTypeExternalTracker)
