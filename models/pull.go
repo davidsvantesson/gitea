@@ -7,6 +7,7 @@ package models
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"path"
@@ -765,28 +766,28 @@ func (pr *PullRequest) UpdateCols(cols ...string) error {
 }
 
 // UpdatePatch generates and saves a new patch.
-func (pr *PullRequest) UpdatePatch() (err error) {
+func (pr *PullRequest) UpdatePatch() (equalPrevious bool, err error) {
 	if err = pr.GetHeadRepo(); err != nil {
-		return fmt.Errorf("GetHeadRepo: %v", err)
+		return false, fmt.Errorf("GetHeadRepo: %v", err)
 	} else if pr.HeadRepo == nil {
 		log.Trace("PullRequest[%d].UpdatePatch: ignored corrupted data", pr.ID)
-		return nil
+		return false, nil
 	}
 
 	if err = pr.GetBaseRepo(); err != nil {
-		return fmt.Errorf("GetBaseRepo: %v", err)
+		return false, fmt.Errorf("GetBaseRepo: %v", err)
 	}
 
 	headGitRepo, err := git.OpenRepository(pr.HeadRepo.RepoPath())
 	if err != nil {
-		return fmt.Errorf("OpenRepository: %v", err)
+		return false, fmt.Errorf("OpenRepository: %v", err)
 	}
 	defer headGitRepo.Close()
 
 	// Add a temporary remote.
 	tmpRemote := com.ToStr(time.Now().UnixNano())
 	if err = headGitRepo.AddRemote(tmpRemote, RepoPath(pr.BaseRepo.MustOwner().Name, pr.BaseRepo.Name), true); err != nil {
-		return fmt.Errorf("AddRemote: %v", err)
+		return false, fmt.Errorf("AddRemote: %v", err)
 	}
 	defer func() {
 		if err := headGitRepo.RemoveRemote(tmpRemote); err != nil {
@@ -795,21 +796,29 @@ func (pr *PullRequest) UpdatePatch() (err error) {
 	}()
 	pr.MergeBase, _, err = headGitRepo.GetMergeBase(tmpRemote, pr.BaseBranch, pr.HeadBranch)
 	if err != nil {
-		return fmt.Errorf("GetMergeBase: %v", err)
+		return false, fmt.Errorf("GetMergeBase: %v", err)
 	} else if err = pr.Update(); err != nil {
-		return fmt.Errorf("Update: %v", err)
+		return false, fmt.Errorf("Update: %v", err)
 	}
 
 	patch, err := headGitRepo.GetPatch(pr.MergeBase, pr.HeadBranch)
 	if err != nil {
-		return fmt.Errorf("GetPatch: %v", err)
+		return false, fmt.Errorf("GetPatch: %v", err)
+	}
+
+	oldpatch, err := pr.BaseRepo.LoadPatch(pr.Index)
+	if err != nil {
+		log.Error("LoadPatch: %v", err)
+	} else if bytes.Equal(patch, oldpatch) {
+		// Equal to old patch, no need to save again
+		return true, nil
 	}
 
 	if err = pr.BaseRepo.SavePatch(pr.Index, patch); err != nil {
-		return fmt.Errorf("BaseRepo.SavePatch: %v", err)
+		return false, fmt.Errorf("BaseRepo.SavePatch: %v", err)
 	}
 
-	return nil
+	return false, nil
 }
 
 // PushToBaseRepo pushes commits from branches of head repository to

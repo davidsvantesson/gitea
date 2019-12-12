@@ -900,6 +900,15 @@ func (repo *Repository) patchPath(e Engine, index int64) (string, error) {
 	return filepath.Join(RepoPath(repo.Owner.Name, repo.Name), "pulls", com.ToStr(index)+".patch"), nil
 }
 
+// LoadPatch loads a saved patch for a given issue ID
+func (repo *Repository) LoadPatch(index int64) ([]byte, error) {
+	patchPath, err := repo.patchPath(x, index)
+	if err != nil {
+		return nil, fmt.Errorf("PatchPath: %v", err)
+	}
+	return ioutil.ReadFile(patchPath)
+}
+
 // SavePatch saves patch data to corresponding location by given issue ID.
 func (repo *Repository) SavePatch(index int64, patch []byte) error {
 	return repo.savePatch(x, index, patch)

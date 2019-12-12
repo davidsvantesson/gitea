@@ -56,10 +56,18 @@ func checkForInvalidation(requests models.PullRequestList, repoID int64, doer *m
 func addHeadRepoTasks(prs []*models.PullRequest) {
 	for _, pr := range prs {
 		log.Trace("addHeadRepoTasks[%d]: composing new test task", pr.ID)
-		if err := pr.UpdatePatch(); err != nil {
+		equal, err := pr.UpdatePatch()
+		if err != nil {
 			log.Error("UpdatePatch: %v", err)
 			continue
-		} else if err := pr.PushToBaseRepo(); err != nil {
+		}
+		if !equal {
+			// Mark old reviews as stale if diff to mergebase has changed
+			if err := models.MarkReviewsAsStale(pr.IssueID); err != nil {
+				log.Error("MarkReviewsAsStale: %v", err)
+			}
+		}
+		if err := pr.PushToBaseRepo(); err != nil {
 			log.Error("PushToBaseRepo: %v", err)
 			continue
 		}
