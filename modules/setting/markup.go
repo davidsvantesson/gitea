@@ -19,6 +19,18 @@ var (
 	ExternalSanitizerRules []MarkupSanitizerRule
 )
 
+// ParserRepoActivation defines for which repositories the external parser shall be activated
+type ParserRepoActivation int
+
+const (
+	// ParserRepoActivationAlways means the parser shall always be active for all repositories
+	ParserRepoActivationAlways ParserRepoActivation = iota
+	// ParserRepoActivationDefault means the parser is by default activated, but can be inactivated for a repository
+	ParserRepoActivationDefault
+	// ParserRepoActivationOptional means the parser is by default deactivated, but can be activated for a repository
+	ParserRepoActivationOptional
+)
+
 // MarkupParser defines the external parser configured in ini
 type MarkupParser struct {
 	Enabled        bool
@@ -26,6 +38,8 @@ type MarkupParser struct {
 	Command        string
 	FileExtensions []string
 	IsInputFile    bool
+	Description    string
+	Activation     ParserRepoActivation
 }
 
 // MarkupSanitizerRule defines the policy for whitelisting attributes on
@@ -131,11 +145,27 @@ func newMarkupRenderer(name string, sec *ini.Section) {
 		return
 	}
 
+	repoActStr := strings.ToLower(sec.Key("REPO_ACTIVATION").MustString("default"))
+	var repoAct ParserRepoActivation
+	switch repoActStr {
+	case "always":
+		repoAct = ParserRepoActivationAlways
+	case "default":
+		repoAct = ParserRepoActivationDefault
+	case "optional":
+		repoAct = ParserRepoActivationOptional
+	default:
+		log.Warn(" REPO_ACTIVATION setting " + repoActStr + " is invalid. Markup " + name + " ignored")
+		return
+	}
+
 	ExternalMarkupParsers = append(ExternalMarkupParsers, MarkupParser{
 		Enabled:        sec.Key("ENABLED").MustBool(false),
 		MarkupName:     name,
 		FileExtensions: exts,
 		Command:        command,
 		IsInputFile:    sec.Key("IS_INPUT_FILE").MustBool(false),
+		Description:    sec.Key("DESCRIPTION").MustString(""),
+		Activation:     repoAct,
 	})
 }

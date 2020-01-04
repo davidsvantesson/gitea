@@ -37,6 +37,22 @@ func (cfg *UnitConfig) ToDB() ([]byte, error) {
 	return json.Marshal(cfg)
 }
 
+// CodeConfig describes code config
+type CodeConfig struct {
+	EnabledRenders  []string
+	DisabledRenders []string
+}
+
+// FromDB fills up a CodeConfig from serialized format.
+func (cfg *CodeConfig) FromDB(bs []byte) error {
+	return json.Unmarshal(bs, &cfg)
+}
+
+// ToDB exports a CodeConfig to a serialized format.
+func (cfg *CodeConfig) ToDB() ([]byte, error) {
+	return json.Marshal(cfg)
+}
+
 // ExternalWikiConfig describes external wiki config
 type ExternalWikiConfig struct {
 	ExternalWikiURL string
@@ -140,8 +156,8 @@ func (r *RepoUnit) Unit() Unit {
 }
 
 // CodeConfig returns config for UnitTypeCode
-func (r *RepoUnit) CodeConfig() *UnitConfig {
-	return r.Config.(*UnitConfig)
+func (r *RepoUnit) CodeConfig() *CodeConfig {
+	return r.Config.(*CodeConfig)
 }
 
 // PullRequestsConfig returns config for UnitTypePullRequests
